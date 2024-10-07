@@ -1,0 +1,55 @@
+import csv
+import re
+
+# Define a custom exception for blacklisted customers
+class CustomerNotAllowedException(Exception):
+    pass
+
+# Define the Customer class
+class Customer:
+    def __init__(self, last_name, email, blacklisted, first_name="Unknown", title="N/A"):
+        self.title = title
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.blacklisted = blacklisted
+
+# Define the Order class to store product details
+class Order:
+    def __init__(self, customer, product_name, product_code):
+        self.customer = customer
+        self.product_name = product_name
+        self.product_code = product_code
+
+# Function to create an order and check if the customer is blacklisted
+def create_order(customer, product_name, product_code):
+    if customer.blacklisted == '1':  # If blacklisted value is 1
+        raise CustomerNotAllowedException(f"Customer {customer.first_name} {customer.last_name} is blacklisted and cannot place an order.")
+    else:
+        # Return an Order object if the customer is eligible
+        return Order(customer, product_name, product_code)
+
+# Path to FairDeal customer data CSV
+fairdeal_csv_path = '/mnt/data/777_m3_datasets_v1.0/FairDealCustomerData.csv'
+
+# Read the FairDeal customer data and store it in Customer objects
+customers = []
+
+with open(fairdeal_csv_path, mode='r') as file:
+    reader = csv.reader(file)
+    for row in reader:
+        last_name = row[0].strip()  # Last name only
+        email = row[1].strip()
+        blacklisted = row[2].strip()
+        
+        # Create Customer object assuming first name is "Unknown"
+        customer = Customer(last_name=last_name, email=email, blacklisted=blacklisted)
+        customers.append(customer)
+
+# Test the enhanced create_order function
+try:
+    test_customer = customers[0]  # Test with the first customer
+    order = create_order(test_customer, "Laptop", "P12345")
+    print(f"Order created for {order.customer.first_name} {order.customer.last_name}, Product: {order.product_name}, Code: {order.product_code}")
+except CustomerNotAllowedException as e:
+    print(e)  # Catch and print exception for blacklisted customer
